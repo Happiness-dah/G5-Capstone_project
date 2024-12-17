@@ -55,6 +55,22 @@ const User = sequelize.define('User', {
   lastLogin: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  phone_number: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
   hooks: {
