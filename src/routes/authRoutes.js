@@ -80,10 +80,15 @@ const changePasswordValidation = [
  *               password:
  *                 type: string
  *                 minLength: 6
+ *               Phone_number:
+ *                 type: string
+ *                 minLength: 11
+ *                 format: numbers
  *               role:
  *                 type: string
  *                 enum: [user, admin, moderator]
  *                 default: user
+ *              
  *     responses:
  *       201:
  *         description: User registered successfully
