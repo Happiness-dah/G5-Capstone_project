@@ -1,91 +1,111 @@
 import https from 'https';
-import dotenv from 'dotenv';
 import AirtimeConversion from '../models/AirtimeConversion.js';
 import User from '../models/User.js';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
 
 // Initialize Airtime Conversion
-export const initializeAirtimeConversion = async (req, res) => {
-  const { user_id, amount, telecom_provider, phone } = req.body;
+// Initialize Airtime Conversion
+const initializeAirtimeConversion = async (req, res) => {
+  const { user_id, amount, telecom_provider, phone, email,  } = req.body;
 
-  if (!user_id || !amount || !telecom_provider || !phone) {
+  if (!user_id || !amount || !telecom_provider || !phone || !email) {
     return res.status(400).json({
       status: 'error',
-      message: 'User ID, amount, telecom provider, and phone number are required',
+      message: 'User ID, amount, telecom provider, phone number, and email are required',
     });
-  };
-  const user = await User.findOne({ where: { email } });
-  const params = JSON.stringify({
-    amount: amount * 100, // Convert to kobo (smallest currency unit for Paystack)
-    email: `${user.email}`, // Dummy email, replace with user email if available
-    currency: 'NGN', // Change to your target currency if needed
-    mobile_money: {
-      phone,
-      provider: telecom_provider,
-    },
-  });
-  const options = {
-    hostname: 'api.paystack.co',
-    port: 443,
-    path: '/charge',
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${paystackSecretKey}`,
-      'Content-Type': 'application/json',
-    },
-  };
-  const request = https.request(options, (response) => {
-    let data = '';
-    response.on('data', (chunk) => {
-      data += chunk;
+  }
+
+  try {
+    const user = await User.find({ where: { id: user_id } });
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found',
+      });
+    }
+    // Default to NGN but allow fallback
+    const currency ="NGN";
+    const params = JSON.stringify({
+      "amount": amount * 100,
+      "email": email,
+      "currency": "NGN",
+      "mobile_money": { phone, provider: telecom_provider },
     });
-    response.on('end', async () => {
-      const result = JSON.parse(data);
+    const options = {
+      hostname: 'api.paystack.co',
+      port: 443,
+      path: '/charge',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${paystackSecretKey}`,
+        'Content-Type': 'application/json',
+      },
+    };
 
-      if (response.statusCode === 200 || response.statusCode === 201) {
-        // Save transaction to database
-        try {
-          const airtimeConversion = await AirtimeConversion.create({
-            user_id,
-            amount,
-            telecom_provider,
-            phone,
-            paystack_reference: result.data.reference,
-          });
-
-          res.status(201).json({
-            status: 'success',
-            message: 'Airtime conversion initialized successfully',
-            data: {
-              airtimeConversion,
-              paystackResponse: result.data,
-            },
-          });
-        } catch (dbError) {
-          res.status(500).json({
+    const paystackReq = https.request(options, (paystackRes) => {
+      let data = '';
+      paystackRes.on('data', (chunk) => {
+        data += chunk;
+      });
+      paystackRes.on('end', async () => {
+        const result = JSON.parse(data);
+        if (paystackRes.statusCode === 200 || paystackRes.statusCode === 201) {
+          try {
+            const airtimeConversion = await AirtimeConversion.create({
+              user_id,
+              amount,
+              telecom_provider,
+              phone,
+              paystack_reference: result.data.reference,
+            });
+            return res.status(201).json({
+              status: 'success',
+              message: 'Airtime conversion initialized successfully',
+              data: {
+                airtimeConversion,
+                paystackResponse: result.data,
+              },
+            });
+          } catch (dbError) {
+            return res.status(500).json({
+              status: 'error',
+              message: 'Database save error',
+            });
+          }
+        } else {
+          if (result.data?.message === 'Currency not yet supported') {
+            return res.status(400).json({
+              status: 'error',
+              message: 'Currency not supported. Use NGN or contact support.',
+              details: result.data,
+            });
+          }
+          return res.status(paystackRes.statusCode).json({
             status: 'error',
-            message: 'An error occurred while saving the airtime conversion to the database',
+            message: result.message || 'Paystack API error',
+            details: result,
           });
         }
-      } else {
-        res.status(response.statusCode).json({
-          status: 'error',
-          message: result.message || 'An error occurred with the Paystack API',
-        });
-      }
+      });
+    }); 
+    paystackReq.on('error', (error) => {
+      return res.status(500).json({
+        status: 'error',
+        message: error.message || 'Paystack communication error',
+      });
     });
-  });
-
-  request.on('error', (error) => {
-    res.status(500).json({
+    paystackReq.write(params);
+    paystackReq.end();
+  } catch (error) {
+    return res.status(500).json({
       status: 'error',
-      message: error.message || 'An error occurred while communicating with Paystack',
+      message: error.message || 'Internal server error',
     });
-  });
-
-  request.write(params);
-  request.end();
+  }
 };
+
+export default initializeAirtimeConversion;

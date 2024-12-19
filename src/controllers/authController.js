@@ -11,7 +11,7 @@ const generateToken = (id) => {
 
 export const register = async (req, res, next) => {
   try {
-    const { username, email, password, role,phone_number,address } = req.body;
+    const { username, email, password, role, phone_number, address} = req.body;
 
     // Create user
     const user = await User.create({
@@ -22,14 +22,14 @@ export const register = async (req, res, next) => {
       phone_number,
       address
     });
-
+     const history = await User.findAll({email : user.email});
     // Generate token
     const token = generateToken(user.id);
 
     res.status(201).json({
       status: 'success',
       data: {
-        user,
+        history,
         token
       }
     });

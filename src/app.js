@@ -7,6 +7,8 @@ import { specs } from './config/swagger.js';
 import { connectDB } from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
+import airtimeRoutes from './routes/airtimeRoutes.js';
+
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +29,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true })
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+//paystack
+app.use('/api/conversion', airtimeRoutes);
 
 // Error handling
 app.use(errorHandler);
