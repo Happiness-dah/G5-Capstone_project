@@ -84,7 +84,6 @@ const router = express.Router();
  *                   example: An internal server error occurred
  */
 
-
 router.post('/initialize', initializeAirtimeConversion);
 
 export default router;
