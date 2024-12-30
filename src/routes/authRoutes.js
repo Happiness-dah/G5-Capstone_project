@@ -7,7 +7,7 @@ import {
   resetPassword,
   changePassword
 } from '../controllers/authController.js';
-import { protect, authorize } from '../middleware/authMiddleware.js';
+import { protectUser, protectAdmin, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -88,7 +88,6 @@ const changePasswordValidation = [
  *                 type: string
  *                 enum: [user, admin, moderator]
  *                 default: user
- *              
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -213,7 +212,7 @@ router.post('/reset-password/:token', passwordValidation, resetPassword);
  *       401:
  *         description: Current password is incorrect
  */
-router.post('/change-password', protect, changePasswordValidation, changePassword);
+router.post('/change-password', protectUser, changePasswordValidation, changePassword);
 
 /**
  * @swagger
@@ -229,7 +228,7 @@ router.post('/change-password', protect, changePasswordValidation, changePasswor
  *       401:
  *         description: Not authorized
  */
-router.get('/test-auth', protect, (req, res) => {
+router.get('/test-auth', protectUser, (req, res) => {
   res.json({
     status: 'success',
     message: 'You are authenticated',
@@ -251,7 +250,7 @@ router.get('/test-auth', protect, (req, res) => {
  *       403:
  *         description: Not authorized (non-admin user)
  */
-router.get('/admin-only', protect, authorize('admin'), (req, res) => {
+router.get('/admin-only', protectAdmin, (req, res) => {
   res.json({
     status: 'success',
     message: 'You have admin access',
