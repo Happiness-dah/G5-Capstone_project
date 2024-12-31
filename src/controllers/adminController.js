@@ -1,7 +1,7 @@
 // adminController.js
 
 import User from '../models/User.js';
-import Transaction from '../models/Transaction.js';
+import Transaction from '../models/Transactions.js';
 import Pricing from '../models/Pricing.js';
 import PaymentService from '../services/paymentService.js';
 import NotificationService from '../services/notificationService.js';
@@ -13,7 +13,7 @@ import * as history from '../controllers/transactionController.js'
 // Monitor Users
 export const monitorUsers = async (req, res) => {
     try {
-        const users = await User.find(); // Get all users from the database
+        const users = await User.findAll(); // Get all users from the database
         res.status(200).json({ success: true, data: users });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -98,7 +98,7 @@ export const reconcilePayments = async (req, res) => {
 // View Audit Logs
 export const viewAuditLogs = async (req, res) => {
     try {
-        const logs = await AuditLog.find(); // Fetch audit logs
+        const logs = await AuditLog.findAll(); // Fetch audit logs
         res.status(200).json({ success: true, data: logs });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -141,14 +141,6 @@ export const updatePlatformSettings = async (req, res) => {
 };
 
 
-export const sendNotification = async (req, res) => {
-    try {
-        const { message, recipients } = req.body;
-        const result = await NotificationService.send(message, recipients);
-        res.json({ success: true, result });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
+
 
 

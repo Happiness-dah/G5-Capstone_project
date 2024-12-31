@@ -3,7 +3,7 @@ import * as adminController from '../controllers/adminController.js';
 import { protectAdmin, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-router.use(protectAdmin, authorize('admin'));
+router.use(protectAdmin);
 
 
 
@@ -15,7 +15,7 @@ router.use(protectAdmin, authorize('admin'));
  *     description: Retrieve a list of all users in the system for monitoring.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Successfully retrieved user list
@@ -24,7 +24,7 @@ router.use(protectAdmin, authorize('admin'));
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/users', protectAdmin, authorize('admin'), adminController.monitorUsers);
+router.get('/users', protectAdmin,  adminController.monitorUsers);
 
 /**
  * @swagger
@@ -34,7 +34,7 @@ router.get('/users', protectAdmin, authorize('admin'), adminController.monitorUs
  *     description: Update the status (active, suspended, etc.) of a user account.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -60,7 +60,7 @@ router.get('/users', protectAdmin, authorize('admin'), adminController.monitorUs
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/account-status', protectAdmin, authorize('admin'), adminController.manageAccountStatus);
+router.post('/account-status', protectAdmin,  adminController.manageAccountStatus);
 
 /**
  * @swagger
@@ -70,7 +70,7 @@ router.post('/account-status', protectAdmin, authorize('admin'), adminController
  *     description: Approve a pending transaction for a user.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -92,7 +92,7 @@ router.post('/account-status', protectAdmin, authorize('admin'), adminController
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/approve-transaction', protectAdmin, authorize('admin'), adminController.approveTransaction);
+router.post('/approve-transaction', protectAdmin,  adminController.approveTransaction);
 
 /**
  * @swagger
@@ -102,7 +102,7 @@ router.post('/approve-transaction', protectAdmin, authorize('admin'), adminContr
  *     description: Refund a completed transaction to a user.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -128,7 +128,7 @@ router.post('/approve-transaction', protectAdmin, authorize('admin'), adminContr
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/refund', protectAdmin, authorize('admin'), adminController.refundTransaction);
+router.post('/refund', protectAdmin,  adminController.refundTransaction);
 
 /**
  * @swagger
@@ -138,7 +138,7 @@ router.post('/refund', protectAdmin, authorize('admin'), adminController.refundT
  *     description: Update the rules for pricing on services such as airtime, data, etc.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -160,7 +160,7 @@ router.post('/refund', protectAdmin, authorize('admin'), adminController.refundT
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/pricing-rules', protectAdmin, authorize('admin'), adminController.updatePricingRules);
+router.post('/pricing-rules', protectAdmin,adminController.updatePricingRules);
 
 /**
  * @swagger
@@ -170,7 +170,7 @@ router.post('/pricing-rules', protectAdmin, authorize('admin'), adminController.
  *     description: Reconciles payments made by users and processes any discrepancies.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Payments reconciled successfully
@@ -179,7 +179,7 @@ router.post('/pricing-rules', protectAdmin, authorize('admin'), adminController.
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/reconcile-payments', protectAdmin, authorize('admin'), adminController.reconcilePayments);
+router.get('/reconcile-payments', protectAdmin, adminController.reconcilePayments);
 
 /**
  * @swagger
@@ -189,7 +189,7 @@ router.get('/reconcile-payments', protectAdmin, authorize('admin'), adminControl
  *     description: Retrieve logs of activities performed by users or the system.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Successfully retrieved audit logs
@@ -198,7 +198,7 @@ router.get('/reconcile-payments', protectAdmin, authorize('admin'), adminControl
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/audit-logs', protectAdmin, authorize('admin'), adminController.viewAuditLogs);
+router.get('/audit-logs', protectAdmin, adminController.viewAuditLogs);
 
 /**
  * @swagger
@@ -208,7 +208,7 @@ router.get('/audit-logs', protectAdmin, authorize('admin'), adminController.view
  *     description: Send a notification to users for updates or alerts.
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -230,7 +230,7 @@ router.get('/audit-logs', protectAdmin, authorize('admin'), adminController.view
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/notifications', protectAdmin, authorize('admin'), adminController.sendNotifications);
+router.post('/notifications', protectAdmin,  adminController.sendNotifications);
 
 /**
  * @swagger
@@ -238,9 +238,9 @@ router.post('/notifications', protectAdmin, authorize('admin'), adminController.
  *   get:
  *     summary: Generate financial reports
  *     description: Generate financial reports for the platform.
- *     tags: [Admin]
+ *      tags: [Authentication]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Report generated successfully
@@ -249,7 +249,7 @@ router.post('/notifications', protectAdmin, authorize('admin'), adminController.
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/reports', protectAdmin, authorize('admin'), adminController.generateReports);
+router.get('/reports', protectAdmin,  adminController.generateReport);
 
 /**
  * @swagger
@@ -259,7 +259,7 @@ router.get('/reports', protectAdmin, authorize('admin'), adminController.generat
  *     description: Update configuration settings for the platform (e.g., payment gateway, service options).
  *     tags: [Admin]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -281,6 +281,6 @@ router.get('/reports', protectAdmin, authorize('admin'), adminController.generat
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/platform-settings', protectAdmin, authorize('admin'), adminController.updatePlatformSettings);
+router.post('/platform-settings', protectAdmin, adminController.updatePlatformSettings);
 
 export default router;

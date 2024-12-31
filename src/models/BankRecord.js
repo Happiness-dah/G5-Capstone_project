@@ -7,10 +7,7 @@ const BankRecord = sequelize.define('BankRecord', {
   transactionId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: 'Transactions', // Assuming your Transactions table is named "Transactions"
-      key: 'id',
-    },
+   
   },
   amount: {
     type: DataTypes.FLOAT,

@@ -214,6 +214,7 @@ router.post('/reset-password/:token', passwordValidation, resetPassword);
  */
 router.post('/change-password', protectUser, changePasswordValidation, changePassword);
 
+
 /**
  * @swagger
  * /auth/test-auth:
