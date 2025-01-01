@@ -1,5 +1,5 @@
 import https from 'https';
-import AirtimeConversion from '../models/airtimeConversion.js';
+import AirtimeConversion from '../models/AirtimeConversion.js';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
 

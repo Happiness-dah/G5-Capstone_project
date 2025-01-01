@@ -1,7 +1,6 @@
 import express from 'express';
 import * as adminController from '../controllers/adminController.js';
 import { protectAdmin, authorize } from '../middleware/authMiddleware.js';
-
 const router = express.Router();
 router.use(protectAdmin);
 

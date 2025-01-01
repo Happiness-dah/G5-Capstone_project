@@ -1,17 +1,14 @@
-const Transactions = require('./Transactions'); 
-const airtimeConversion = require('./airtimeConversion'); 
-const Debit = require('./Debit'); 
-const Deposit = require('./Deposit');
-const BillsPayments = require('./BillsPayments'); 
+import Transactions from '../models/Transactions.js';
+import airtimeConversion from '../models/AirtimeConversion.js';
+import Debit from '../models/Debit.js';
+import Deposit from '../models/Deposits.js';
+import BillsPayments from '../models/BillPayments.js';
 
-const { Transactions, airtimeConversion, Debit, Deposit, BillsPayments } = require('../models');
-
-async function getTransactionHistory(filters) {
+const getTransactionHistory = async (filters) => {
   try {
-
     const queryOptions = {
-      where: {}, 
-      order: [['createdAt', 'DESC']], 
+      where: {},
+      order: [['createdAt', 'DESC']],
     };
 
     if (filters.userId) {
@@ -27,29 +24,28 @@ async function getTransactionHistory(filters) {
       };
     }
 
-    const transactions = await Transaction.findAll(queryOptions);
+    const transactions = await Transactions.findAll(queryOptions);
 
     if (transactions.length === 0) {
       return { status: 'success', message: 'No transactions found', data: [] };
     }
-
 
     const detailedTransactions = await Promise.all(
       transactions.map(async (transaction) => {
         const { transaction_type, reference_number } = transaction;
 
         if (transaction_type === 'airtime conversion') {
-          const airtimeConversion = await AirtimeConversion.findByPk(reference_number);
-          return { ...transaction.toJSON(), details: airtimeConversion };
+          const airtimeConversions = await airtimeConversion.findByPk(reference_number);
+          return { ...transaction.toJSON(), details: airtimeConversions };
         } else if (transaction_type === 'debit') {
-          const debitTransaction = await DebitTransaction.findByPk(reference_number);
+          const debitTransaction = await Debit.findByPk(reference_number);
           return { ...transaction.toJSON(), details: debitTransaction };
         } else if (transaction_type === 'credit') {
-          const creditTransaction = await CreditTransaction.findByPk(reference_number);
+          const creditTransaction = await Deposit.findByPk(reference_number);
           return { ...transaction.toJSON(), details: creditTransaction };
         } else if (transaction_type === 'airtime buying') {
-          const BillsPayments = await BillsPayments.findByPk(reference_number);
-          return { ...transaction.toJSON(), details: BillsPayments };
+          const BillsPayment = await BillsPayments.findByPk(reference_number);
+          return { ...transaction.toJSON(), details: BillsPayment };
         } else {
           return { ...transaction.toJSON(), details: null };
         }
@@ -60,6 +56,6 @@ async function getTransactionHistory(filters) {
   } catch (error) {
     return { status: 'error', message: error.message };
   }
-}
+};
 
-module.exports = { getTransactionHistory };
+export default getTransactionHistory;
