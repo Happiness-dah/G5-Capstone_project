@@ -79,13 +79,14 @@ const saveTransaction = async (transactionData) => {
       }
 
       // Return both the transaction and related record
-      return {
+      return res.status(201).json
+      ({
         transaction,
         relatedRecord,
-      };
+      });
     });
 
-    return { status: 'success', message: 'Transaction saved successfully', data: result };
+    return res.status(201).json({ status: 'success', message: 'Transaction saved successfully', data: result });
   } catch (error) {
     return { status: 'error', message: error.message };
   }
