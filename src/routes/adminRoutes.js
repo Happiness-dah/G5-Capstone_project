@@ -2,7 +2,6 @@ import express from 'express';
 import * as adminController from '../controllers/adminController.js';
 import { protectAdmin, authorize } from '../middleware/authMiddleware.js';
 const router = express.Router();
-router.use(protectAdmin);
 
 
 
@@ -23,12 +22,12 @@ router.use(protectAdmin);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/users', protectAdmin,  adminController.monitorUsers);
+router.get('/users', protectAdmin, authorize('admin'), adminController.monitorUsers);
 
 /**
  * @swagger
  * /admin/account-status:
- *   post:
+ *   put:
  *     summary: Manage user account status
  *     description: Update the status (active, suspended, etc.) of a user account.
  *     tags: [Admin]
@@ -59,7 +58,7 @@ router.get('/users', protectAdmin,  adminController.monitorUsers);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/account-status', protectAdmin,  adminController.manageAccountStatus);
+router.put('/account-status', protectAdmin, authorize('admin'), adminController.manageAccountStatus);
 
 /**
  * @swagger
@@ -91,7 +90,7 @@ router.post('/account-status', protectAdmin,  adminController.manageAccountStatu
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/approve-transaction', protectAdmin,  adminController.approveTransaction);
+router.post('/approve-transaction', protectAdmin, authorize('admin'), adminController.approveTransaction);
 
 /**
  * @swagger
@@ -127,7 +126,7 @@ router.post('/approve-transaction', protectAdmin,  adminController.approveTransa
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/refund', protectAdmin,  adminController.refundTransaction);
+router.post('/refund', protectAdmin, authorize('admin'), adminController.refundTransaction);
 
 /**
  * @swagger
@@ -159,7 +158,7 @@ router.post('/refund', protectAdmin,  adminController.refundTransaction);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/pricing-rules', protectAdmin,adminController.updatePricingRules);
+router.post('/pricing-rules', protectAdmin, authorize('admin'), adminController.updatePricingRules);
 
 /**
  * @swagger
@@ -178,7 +177,7 @@ router.post('/pricing-rules', protectAdmin,adminController.updatePricingRules);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/reconcile-payments', protectAdmin, adminController.reconcilePayments);
+router.get('/reconcile-payments', protectAdmin, authorize('admin'), adminController.reconcilePayments);
 
 /**
  * @swagger
@@ -197,7 +196,7 @@ router.get('/reconcile-payments', protectAdmin, adminController.reconcilePayment
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/audit-logs', protectAdmin, adminController.viewAuditLogs);
+router.get('/audit-logs', protectAdmin, authorize('admin'), adminController.viewAuditLogs);
 
 /**
  * @swagger
@@ -229,7 +228,7 @@ router.get('/audit-logs', protectAdmin, adminController.viewAuditLogs);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/notifications', protectAdmin,  adminController.sendNotifications);
+router.post('/notifications', protectAdmin, authorize('admin'), adminController.sendNotifications);
 
 /**
  * @swagger
@@ -248,7 +247,7 @@ router.post('/notifications', protectAdmin,  adminController.sendNotifications);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.get('/reports', protectAdmin,  adminController.generateReport);
+router.get('/reports', protectAdmin, authorize('admin'), adminController.generateReport);
 
 /**
  * @swagger
@@ -280,6 +279,200 @@ router.get('/reports', protectAdmin,  adminController.generateReport);
  *       403:
  *         description: Forbidden - User does not have permission
  */
-router.post('/platform-settings', protectAdmin, adminController.updatePlatformSettings);
+router.post('/platform-settings', protectAdmin, authorize('admin'), adminController.updatePlatformSettings);
+
+router.post('/createproduct', protectAdmin, authorize('admin'), adminController.createProduct);
+
+/**
+ * @swagger
+ * /admin/createproduct:
+ *   post:
+ *     summary: Create a new product
+ *     description: Allows admin to create a new product with all necessary details.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the product
+ *                 example: "Example Product"
+ *               description:
+ *                 type: string
+ *                 description: Detailed description of the product
+ *                 example: "This is an example product description."
+ *               price:
+ *                 type: number
+ *                 description: Price of the product
+ *                 example: 100.00
+ *               discount:
+ *                 type: number
+ *                 description: Discount on the product (if any)
+ *                 example: 10.00
+ *               currency:
+ *                 type: string
+ *                 description: Currency for the product price
+ *                 example: "USD"
+ *               isActive:
+ *                 type: boolean
+ *                 description: Whether the product is active
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Product created successfully
+ *       400:
+ *         description: Bad request - Invalid input data
+ *       401:
+ *         description: Unauthorized - User not authenticated
+ *       403:
+ *         description: Forbidden - User does not have permission
+ */
+router.post('/createproduct', protectAdmin, authorize('admin'), adminController.createProduct);
+
+/**
+ * @swagger
+ * /admin/fetchSingleProduct:
+ *   get:
+ *     summary: Fetch single product
+ *     description: Retrieve details of a single product by its ID.
+ *     tags: 
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the product to fetch.
+ *     responses:
+ *       200:
+ *         description: Product fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   description: Product details
+ *       400:
+ *         description: Bad request - Missing or invalid product ID.
+ *       401:
+ *         description: Unauthorized - User not authenticated.
+ *       403:
+ *         description: Forbidden - User does not have permission.
+ *       404:
+ *         description: Product not found.
+ */
+router.get('/fetchSingleProduct', protectAdmin, authorize('admin'), adminController.fetchSingleProduct);
+
+/**
+ * @swagger
+ * /admin/updateproduct:
+ *   put:
+ *     summary: Update an existing product
+ *     description: Allows admin to update details of an existing product by its ID.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: ID of the product to be updated
+ *                 example: 1
+ *               name:
+ *                 type: string
+ *                 description: Updated name of the product
+ *                 example: "Updated Product Name"
+ *               description:
+ *                 type: string
+ *                 description: Updated description of the product
+ *                 example: "Updated product description."
+ *               price:
+ *                 type: number
+ *                 description: Updated price of the product
+ *                 example: 120.00
+ *               discount:
+ *                 type: number
+ *                 description: Updated discount for the product
+ *                 example: 15.00
+ *               currency:
+ *                 type: string
+ *                 description: Updated currency for the product price
+ *                 example: "EUR"
+ *               isActive:
+ *                 type: boolean
+ *                 description: Updated active status of the product
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Product updated successfully
+ *       400:
+ *         description: Bad request - Invalid input data or product ID not found
+ *       401:
+ *         description: Unauthorized - User not authenticated
+ *       403:
+ *         description: Forbidden - User does not have permission
+ *       404:
+ *         description: Not found - Product with specified ID does not exist
+ */
+router.put('/updateproduct', protectAdmin, authorize('admin'), adminController.updateProduct);
+
+/**
+ * @swagger
+ * /admin/fetchProduct:
+ *   get:
+ *     summary: Fetch all products
+ *     description: Retrieve a list of all products in the system.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of products retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   price:
+ *                     type: number
+ *                     format: float
+ *                   currency:
+ *                     type: string
+ *                   isActive:
+ *                     type: boolean
+ *       401:
+ *         description: Unauthorized - User not authenticated.
+ *       403:
+ *         description: Forbidden - User does not have permission.
+ */
+router.get('/fetchProduct', protectAdmin, authorize('admin'), adminController.fetchProduct);
 
 export default router;

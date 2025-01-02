@@ -1,6 +1,5 @@
 // models/PlatformSettings.js
-
-import { Sequelize, DataTypes } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js'; // Assuming you have a database connection setup
 
 const PlatformSettings = sequelize.define('PlatformSettings', {

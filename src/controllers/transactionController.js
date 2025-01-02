@@ -1,4 +1,4 @@
-import getTransactionHistory from '../models/history.js'; 
+import getTransactionHistory from '../services/history.js'; 
 
 // Controller to handle history API requests
 export const fetchTransactionHistory = async (req, res) => {

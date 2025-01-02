@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
+import Product from './Product.js';
+
 const Pricing = sequelize.define('Pricing', {
     id: {
         type: DataTypes.INTEGER,
@@ -8,7 +10,7 @@ const Pricing = sequelize.define('Pricing', {
         autoIncrement: true,
         primaryKey: true,
     },
-    productId: {
+    product_Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
 
@@ -48,5 +50,5 @@ const Pricing = sequelize.define('Pricing', {
     tableName: 'Pricings',
     timestamps: true,
 });
-
+Pricing.belongsTo(Product, { foreignKey: 'product_Id' });
 export default Pricing;

@@ -78,21 +78,21 @@ export const protectAdmin = async (req, res, next) => {
       if (!user) {
         return res.status(401).json({
           status: 'error',
-          message: 'User no longer exists'
+          message: 'admin no longer exists'
         });
       }
 
       if (!user.isActive) {
         return res.status(401).json({
           status: 'error',
-          message: 'User account is deactivated'
+          message: 'admin account is deactivated'
         });
       }
 
       if (user.role !== 'admin') {
         return res.status(403).json({
           status: 'error',
-          message: 'User does not have permission to access admin routes'
+          message: 'admin does not have permission to access admin routes'
         });
       }
 

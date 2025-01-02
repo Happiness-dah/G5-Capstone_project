@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
-
+import Transactions from './Transactions.js';
 const BillPayments = sequelize.define('BillPayments', {
   id: {
     type: DataTypes.UUID,
@@ -27,7 +27,7 @@ const BillPayments = sequelize.define('BillPayments', {
     type: DataTypes.ENUM('pending', 'successful', 'failed'),
     defaultValue: 'pending',
   },
-  transaction_id: {
+  reference_id: {
     type: DataTypes.UUID,
     allowNull: false,
   },
@@ -41,4 +41,5 @@ const BillPayments = sequelize.define('BillPayments', {
   },
 });
 
+BillPayments.belongsTo(Transactions, { foreignKey: 'reference_id' });
 export default BillPayments;

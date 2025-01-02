@@ -1,6 +1,6 @@
 // models/Product.js
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../config/database.js';  // Assuming you have a configured sequelize instance
+import  sequelize from '../config/database.js';  // Assuming you have a configured sequelize instance
 
 const Product = sequelize.define('Product', {
   id: {
@@ -48,9 +48,6 @@ const Product = sequelize.define('Product', {
     allowNull: false,
     defaultValue: DataTypes.NOW,
   },
-}, {
-  tableName: 'Products',  // Specify table name (optional if it matches the model name)
-  timestamps: true,       // Enables Sequelize to automatically handle createdAt and updatedAt
 });
 
 export default Product;

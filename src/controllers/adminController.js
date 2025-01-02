@@ -8,10 +8,14 @@ import NotificationService from '../services/notificationService.js';
 import ReportService from '../services/reportService.js';
 import PlatformSettings from '../models/PlatformSettings.js';
 import AuditLog from '../models/AuditLog.js';
+import Product from '../models/Product.js';
+import getTransactionHistory from '../services/history.js';
 // Monitor Users
 export const monitorUsers = async (req, res) => {
     try {
-        const users = await User.findAll(); // Get all users from the database
+        const users = await User.findAll({
+            where: { role: 'user' } // Fetch users where role is 'user'
+        }); // Get all users from the database
         res.status(200).json({ success: true, data: users });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -27,7 +31,6 @@ export const manageAccountStatus = async (req, res) => {
 
         user.status = action === 'suspend' ? 'suspended' : 'active';
         await user.save();
-
         res.status(200).json({ success: true, message: `User ${action}ed successfully.` });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -38,7 +41,8 @@ export const manageAccountStatus = async (req, res) => {
 export const approveTransaction = async (req, res) => {
     try {
         const { transactionId } = req.body;
-        const transaction = await Transaction.findById(transactionId);
+        const filters = transactionId;
+        const transaction = await getTransactionHistory(filters);
 
         if (!transaction) return res.status(404).json({ success: false, message: 'Transaction not found.' });
         if (transaction.status !== 'pending') return res.status(400).json({ success: false, message: 'Transaction cannot be approved.' });
@@ -138,7 +142,111 @@ export const updatePlatformSettings = async (req, res) => {
     }
 };
 
+export const createProduct = async (req, res) => {
+    try {
+        const { name, description, price, discount, currency, isActive } = req.body;
 
+        // Validate required fields
+        if (!name || price === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product name and price are required.',
+            });
+        }
 
+        // Calculate final price if discount is provided
+        const finalPrice = discount ? price - discount : price;
 
+        // Create a new product
+        const newProduct = await Product.create({
+            name,
+            description,
+            price,
+            discount,
+            finalPrice,
+            currency: currency || 'NGN', // Default to 'USD' if not provided
+            isActive: isActive !== undefined ? isActive : true, // Default to true if not provided
+        });
 
+        res.status(201).json({
+            success: true,
+            message: 'Product created successfully.',
+            data: newProduct,
+        });
+    } catch (error) {
+        console.error('Error creating product:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while creating the product.',
+        });
+    }
+};
+
+export const updateProduct = async (req, res) => {
+    try {
+        const { id, key, value } = req.body; // Example: { id: 1, key: "currency", value: "USD" }
+
+        // Validate required fields
+        if (!id || !key || value === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product ID, key, and value are required.',
+            });
+        }
+
+        // Check if the product exists
+        const product = await Product.findByPk(id);
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found.',
+            });
+        }
+
+        // Dynamically update the key with the provided value
+        product[key] = value;
+        await product.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Product updated successfully.',
+            data: product,
+        });
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while updating the product.',
+        });
+    }
+};
+
+export const fetchProduct = async (req, res) => {
+    try {
+        const product = await Product.findAll({}); // Get all products from the database
+        res.status(200).json({ success: true, data: product });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
+
+export const fetchSingleProduct = async (req, res) => {
+    try {
+        const id = req.query;
+        const product = await Product.findone({
+            where: {
+                id
+            }
+        })
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found.',
+            });
+        }
+        res.status(200).json({ success: true, data: product });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+
+}

@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
+import Transactions from './Transactions.js';
 
 const AirtimeConversion = sequelize.define('AirtimeConversion', {
   id: {
@@ -23,9 +24,9 @@ const AirtimeConversion = sequelize.define('AirtimeConversion', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  paystack_reference: {
-    type: DataTypes.STRING,
-    allowNull: true,
+  reference_id: {
+    type: DataTypes.UUID,
+    allowNull: false,
   },
   created_at: {
     type: DataTypes.DATE,
@@ -36,5 +37,5 @@ const AirtimeConversion = sequelize.define('AirtimeConversion', {
     defaultValue: DataTypes.NOW,
   },
 });
-
+AirtimeConversion.belongsTo(Transactions, { foreignKey: 'reference_id' });
 export default AirtimeConversion;
