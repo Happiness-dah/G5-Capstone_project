@@ -5,7 +5,7 @@ import  Transactions  from '../models/Transactions.js'; // Adjust the import pat
  * @param {number} length - The length of the reference number.
  * @returns {Promise<string>} - A unique random numeric reference number.
  */
-async function generateUniqueReference(length = 12) {
+async function generateUniqueReference(length = 6) {
   const digits = '0123456789';
 
   const generateRandomNumber = () => {
