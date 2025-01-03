@@ -3,6 +3,7 @@ import AirtimeConversion from '../models/AirtimeConversion.js';
 import Debit from '../models/Debit.js';
 import Deposit from '../models/Deposits.js';
 import BillPayments from '../models/BillPayments.js';
+import User from '../models/User.js';
 
 const saveTransaction = async (transactionData) => {
   const { userId, type, amount, referenceId, status = 'pending', details } = transactionData;
@@ -38,6 +39,13 @@ const saveTransaction = async (transactionData) => {
           },
           { transaction: t }
         );
+
+        // Update user balance (add amount for airtime conversion)
+        const user = await User.findByPk(userId, { transaction: t });
+        if (user) {
+          user.account_balance += amount;
+          await user.save({ transaction: t });
+        }
       } else if (type === 'debit') {
         const { recipient, remarks } = details;
         relatedRecord = await Debit.create(
@@ -51,6 +59,13 @@ const saveTransaction = async (transactionData) => {
           },
           { transaction: t }
         );
+
+        // Update user balance (subtract amount for debit)
+        const user = await User.findByPk(userId, { transaction: t });
+        if (user) {
+          user.account_balance -= amount;
+          await user.save({ transaction: t });
+        }
       } else if (type === 'deposit') {
         relatedRecord = await Deposit.create(
           {
@@ -62,6 +77,13 @@ const saveTransaction = async (transactionData) => {
           },
           { transaction: t }
         );
+
+        // Update user balance (add amount for deposit)
+        const user = await User.findByPk(userId, { transaction: t });
+        if (user) {
+          user.account_balance += amount;
+          await user.save({ transaction: t });
+        }
       } else if (type === 'bill_payment') {
         const { billType, billProvider } = details;
         relatedRecord = await BillPayments.create(
@@ -76,17 +98,23 @@ const saveTransaction = async (transactionData) => {
           },
           { transaction: t }
         );
+
+        // Update user balance (subtract amount for bill payment)
+        const user = await User.findByPk(userId, { transaction: t });
+        if (user) {
+          user.account_balance -= amount;
+          await user.save({ transaction: t });
+        }
       }
 
       // Return both the transaction and related record
-      return res.status(201).json
-      ({
+      return {
         transaction,
         relatedRecord,
-      });
+      };
     });
 
-    return res.status(201).json({ status: 'success', message: 'Transaction saved successfully', data: result });
+    return { status: 'success', message: 'Transaction saved successfully', data: result };
   } catch (error) {
     return { status: 'error', message: error.message };
   }

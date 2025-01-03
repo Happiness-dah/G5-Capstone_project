@@ -27,6 +27,7 @@ const Transactions = sequelize.define('Transactions', {
     type: DataTypes.ENUM('pending', 'successful', 'failed'),
     defaultValue: 'pending',
   },
+ 
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
