@@ -34,7 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
 //paystack
-app.use('/api/conversion', airtimeRoutes);
+app.use('/api/airtime', airtimeRoutes);
 
 // Error handling
 app.use(errorHandler);
