@@ -1,5 +1,4 @@
-
-import express from 'express';
+  import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
@@ -8,6 +7,7 @@ import { connectDB } from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 import airtimeRoutes from './routes/airtimeRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 
 // Load environment variables
@@ -30,8 +30,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true })
 // Routes
 app.use('/api/auth', authRoutes);
 
+//admin
+app.use('/api/admin', adminRoutes);
+
 //paystack
-app.use('/api/conversion', airtimeRoutes);
+app.use('/api/airtime', airtimeRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -51,6 +54,7 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDB();
+    console.log(process.env.DB_HOST); // Check if environment variables are loaded
 
     // Start listening
     app.listen(PORT, () => {

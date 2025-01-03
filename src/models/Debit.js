@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
-
+import Transactions from './Transactions.js';
+import User from './User.js';
 const Debit = sequelize.define('Debit', {
   id: {
     type: DataTypes.UUID,
@@ -19,8 +20,8 @@ const Debit = sequelize.define('Debit', {
     type: DataTypes.STRING, // E.g., recipient account or phone number
     allowNull: false,
   },
-  transaction_reference: {
-    type: DataTypes.STRING, // Reference for tracking the transaction
+  reference_id: {
+    type: DataTypes.UUID,
     allowNull: false,
   },
   status: {
@@ -40,5 +41,7 @@ const Debit = sequelize.define('Debit', {
     defaultValue: DataTypes.NOW,
   },
 });
+Debit.belongsTo(Transactions, { foreignKey: 'reference_id' })
+Debit.belongsTo(User, { foreignKey: 'user_id' })
 
 export default Debit;

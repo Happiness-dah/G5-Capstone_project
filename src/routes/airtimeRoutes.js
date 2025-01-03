@@ -1,16 +1,14 @@
 import express from 'express';
-import  initializeAirtimeConversion  from '../controllers/airtimeController.js';
+import * as conversion from '../controllers/airtimeController.js';
 
 const router = express.Router();
-
-// Route to initialize airtime conversion
 
 /**
  * @swagger
  * /airtime/initialize:
  *   post:
  *     summary: Initialize an airtime conversion
- *     description: Endpoint to initialize an airtime conversion with the Paystack API.
+ *     description: Validates the network provider and initiates an airtime conversion process.
  *     tags: [Airtime Conversion]
  *     requestBody:
  *       required: true
@@ -19,24 +17,12 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               user_id:
+ *               network:
  *                 type: string
- *                 description: ID of the user making the conversion.
- *                 example: "12345"
- *               amount:
- *                 type: number
- *                 description: Amount to convert (in Naira).
- *                 example: 500
- *               telecom_provider:
- *                 type: string
- *                 description: Telecom provider name.
+ *                 description: The network provider for the airtime conversion.
  *                 example: "MTN"
- *               phone:
- *                 type: string
- *                 description: Phone number to receive the airtime.
- *                 example: "08123456789"
  *     responses:
- *       201:
+ *       200:
  *         description: Airtime conversion initialized successfully
  *         content:
  *           application/json:
@@ -48,16 +34,14 @@ const router = express.Router();
  *                   example: success
  *                 message:
  *                   type: string
- *                   example: Airtime conversion initialized successfully
+ *                   example: Initialization successful.
+ *                 phone:
+ *                   type: string
+ *                   example: "08123456789"
  *                 data:
  *                   type: object
- *                   properties:
- *                     airtimeConversion:
- *                       type: object
- *                     paystackResponse:
- *                       type: object
  *       400:
- *         description: Bad request (missing or invalid fields)
+ *         description: Missing required fields
  *         content:
  *           application/json:
  *             schema:
@@ -68,7 +52,7 @@ const router = express.Router();
  *                   example: error
  *                 message:
  *                   type: string
- *                   example: User ID, amount, telecom provider, and phone number are required
+ *                   example: "Network provider is required."
  *       500:
  *         description: Internal server error
  *         content:
@@ -81,9 +65,90 @@ const router = express.Router();
  *                   example: error
  *                 message:
  *                   type: string
- *                   example: An internal server error occurred
+ *                   example: "Internal server error."
  */
 
-router.post('/initialize', initializeAirtimeConversion);
+
+router.post('/initialize', conversion.initializeAirtimeConversion);
+
+/**
+ * @swagger
+ * /airtime/complete:
+ *   post:
+ *     summary: Complete an airtime conversion
+ *     description: Completes an airtime conversion by sending necessary details to the API.
+ *     tags: [Airtime Conversion]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: string
+ *                 description: The user ID performing the conversion.
+ *                 example: "12345"
+ *               amount:
+ *                 type: number
+ *                 description: The amount of airtime to convert.
+ *                 example: 500
+ *               network:
+ *                 type: string
+ *                 description: The network provider for the airtime conversion.
+ *                 example: "MTN"
+ *               Sender_phone:
+ *                 type: string
+ *                 description: The sender's phone number.
+ *                 example: "08123456789"
+ *               reciever_phone:
+ *                 type: string
+ *                 description: The receiver's phone number.
+ *                 example: "08198765432"
+ *     responses:
+ *       201:
+ *         description: Airtime conversion completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: "Airtime conversion completed successfully."
+ *                 data:
+ *                   type: object
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 message:
+ *                   type: string
+ *                   example: "User ID, amount, network, sender phone, and receiver phone are required."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+router.post('/complete', conversion.CompleteAirtimeConversion);
 
 export default router;
