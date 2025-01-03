@@ -46,6 +46,10 @@ const User = sequelize.define(
       defaultValue: 'user',
       allowNull: false,
     },
+    account_balance: {
+      type: DataTypes.DECIMAL,
+      allowNull: false,
+    },
     avatar: {
       type: DataTypes.STRING,
       allowNull: true,
