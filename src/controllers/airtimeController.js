@@ -76,7 +76,7 @@ const CompleteAirtimeConversion = async (req, res) => {
 
     // Make the VTU Africa API request using axios
     const response = await axios.get(
-      `https://vtuafrica.com.ng/portal/api/airtime-cash/?apikey=${apiKEY}&network=${network}&sender=${senderPhone}&sendernumber=${senderPhone}&amount=${amount}&sitephone=${receiverPhone}&ref=${referenceId}`
+      `https://vtuafrica.com.ng/portal/api-test/airtime-cash/?apikey=${apiKEY}&network=${network}&sender=${senderPhone}&sendernumber=${senderPhone}&amount=${amount}&sitephone=${receiverPhone}&ref=${referenceId}`
     );
 
     const result = response.data;

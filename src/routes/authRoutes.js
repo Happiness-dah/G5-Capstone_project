@@ -26,8 +26,12 @@ const registerValidation = [
   body('role')
     .optional()
     .isIn(['user', 'admin', 'moderator'])
-    .withMessage('Invalid role specified')
+    .withMessage('Invalid role specified'),
+  body('pin')
+    .isLength({ min: 4, max: 4 })
+    .withMessage('Pin must be exactly 4 characters long'),
 ];
+
 
 const loginValidation = [
   body('email')
@@ -69,6 +73,7 @@ const changePasswordValidation = [
  *               - username
  *               - email
  *               - password
+ *               - pin
  *             properties:
  *               username:
  *                 type: string
@@ -80,14 +85,18 @@ const changePasswordValidation = [
  *               password:
  *                 type: string
  *                 minLength: 6
- *               Phone_number:
+ *               phoneNumber:
  *                 type: string
  *                 minLength: 11
- *                 format: numbers
+ *                 format : number
  *               role:
  *                 type: string
  *                 enum: [user, admin, moderator]
  *                 default: user
+ *               pin:
+ *                 type: string
+ *                 minimum: 0000
+ *                 maximum: 9999
  *     responses:
  *       201:
  *         description: User registered successfully
