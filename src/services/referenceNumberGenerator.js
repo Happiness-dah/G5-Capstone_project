@@ -1,38 +1,23 @@
-import  Transactions  from '../models/Transactions.js'; // Adjust the import path for your transaction model
 
-/**
- * Generates a unique reference number by checking the `reference_id` field in the `transactions` table.
- * @param {number} length - The length of the reference number.
- * @returns {Promise<string>} - A unique random numeric reference number.
- */
-async function generateUniqueReference(length = 6) {
-  const digits = '0123456789';
+import crypto from 'crypto';
+import Transactions from '../models/Transactions.js'; // Adjust the path to your Sequelize models
+//  directory
+async function generateUniqueRef() {
+  let unique = false;
+  let ref;
 
-  const generateRandomNumber = () => {
-    let reference = '';
-    for (let i = 0; i < length; i++) {
-      reference += digits[Math.floor(Math.random() * digits.length)];
+  while (!unique) {
+    // Generate a random reference ID
+    ref = crypto.randomBytes(6).toString('hex').toUpperCase();
+
+    // Check if it exists in the transaction table
+    const existing = await Transactions.findOne({ where: { reference_id: ref } });
+    if (!existing) {
+      unique = true;
     }
-    return reference;
-  };
+  }
 
-  let uniqueReference;
-  let isUnique = false;
-
-  do {
-    uniqueReference = generateRandomNumber();
-
-    // Check if the generated reference already exists in the transactions table
-    const existingTransaction = await Transactions.findOne({
-      where: { reference_id: uniqueReference },
-    });
-
-    if (!existingTransaction) {
-      isUnique = true;
-    }
-  } while (!isUnique);
-
-  return uniqueReference;
+  return ref;
 }
 
-export default generateUniqueReference;
+export default generateUniqueRef;

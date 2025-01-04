@@ -1,5 +1,6 @@
 import express from 'express';
 import * as conversion from '../controllers/airtimeController.js';
+import { fetchData } from '../controllers/testing.js';
 
 const router = express.Router();
 
@@ -150,5 +151,8 @@ router.post('/initialize', conversion.initializeAirtimeConversion);
  */
 
 router.post('/complete', conversion.CompleteAirtimeConversion);
+
+
+router.post('/testing', fetchData);
 
 export default router;

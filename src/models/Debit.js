@@ -41,7 +41,12 @@ const Debit = sequelize.define('Debit', {
     defaultValue: DataTypes.NOW,
   },
 });
-Debit.belongsTo(Transactions, { foreignKey: 'reference_id' })
+Debit.belongsTo(Transactions, {
+  foreignKey: 'reference_id',
+  targetKey: 'reference_id', // Match the reference_id field in Transactions
+  onDelete: 'CASCADE', // Cascade delete to clean up related records
+  onUpdate: 'CASCADE',
+});
 Debit.belongsTo(User, { foreignKey: 'user_id' })
 
 export default Debit;
