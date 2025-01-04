@@ -41,5 +41,10 @@ const BillPayments = sequelize.define('BillPayments', {
   },
 });
 
-BillPayments.belongsTo(Transactions, { foreignKey: 'reference_id' });
+BillPayments.belongsTo(Transactions, {
+  foreignKey: 'reference_id',
+  targetKey: 'reference_id', // Match the reference_id field in Transactions
+  onDelete: 'CASCADE', // Cascade delete to clean up related records
+  onUpdate: 'CASCADE',
+});
 export default BillPayments;

@@ -37,5 +37,10 @@ const AirtimeConversion = sequelize.define('AirtimeConversion', {
     defaultValue: DataTypes.NOW,
   },
 });
-AirtimeConversion.belongsTo(Transactions, { foreignKey: 'reference_id' });
+AirtimeConversion.belongsTo(Transactions, {
+  foreignKey: 'reference_id',
+  targetKey: 'reference_id', // Match the reference_id field in Transactions
+  onDelete: 'CASCADE', // Cascade delete to clean up related records
+  onUpdate: 'CASCADE',
+});
 export default AirtimeConversion;

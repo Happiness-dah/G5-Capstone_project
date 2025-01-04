@@ -11,18 +11,20 @@ const generateToken = (id) => {
 
 export const register = async (req, res, next) => {
   try {
-    const { username, email, password, role, phone_number, address} = req.body;
+    const { username, email, password, role, phone_number, pin } = req.body;
+    const account_balance = 0;
 
     // Create user
     const user = await User.create({
       username,
       email,
       password,
-      role: role || 'user' ,// Default to 'user' if no role specified
+      role: role || 'user',// Default to 'user' if no role specified
       phone_number,
-      address
+      pin,
+      account_balance
     });
-     const history = await User.findAll({email : user.email});
+    const history = await User.findAll({ email: user.email });
     // Generate token
     const token = generateToken(user.id);
 
@@ -192,3 +194,4 @@ export const changePassword = async (req, res, next) => {
     next(error);
   }
 };
+

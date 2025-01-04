@@ -128,37 +128,6 @@ router.post('/approve-transaction', protectAdmin, authorize('admin'), adminContr
  */
 router.post('/refund', protectAdmin, authorize('admin'), adminController.refundTransaction);
 
-/**
- * @swagger
- * /admin/pricing-rules:
- *   post:
- *     summary: Update pricing rules
- *     description: Update the rules for pricing on services such as airtime, data, etc.
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               pricingRules:
- *                 type: object
- *                 description: New pricing rules for services
- *                 example: { "airtime": 1.50, "data": 0.80 }
- *     responses:
- *       200:
- *         description: Pricing rules updated successfully
- *       400:
- *         description: Bad request - Invalid pricing rules data
- *       401:
- *         description: Unauthorized - User not authenticated
- *       403:
- *         description: Forbidden - User does not have permission
- */
-router.post('/pricing-rules', protectAdmin, authorize('admin'), adminController.updatePricingRules);
 
 /**
  * @swagger
@@ -280,8 +249,6 @@ router.get('/reports', protectAdmin, authorize('admin'), adminController.generat
  *         description: Forbidden - User does not have permission
  */
 router.post('/platform-settings', protectAdmin, authorize('admin'), adminController.updatePlatformSettings);
-
-router.post('/createproduct', protectAdmin, authorize('admin'), adminController.createProduct);
 
 /**
  * @swagger

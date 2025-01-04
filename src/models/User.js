@@ -41,13 +41,23 @@ const User = sequelize.define(
         },
       },
     },
+    pin: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        len: {
+          args: [4],
+          msg: 'Pin must be between 4 long.',
+        },
+      },
+    },
     role: {
       type: DataTypes.ENUM('user', 'admin', 'moderator'),
       defaultValue: 'user',
       allowNull: false,
     },
     account_balance: {
-      type: DataTypes.DECIMAL,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     avatar: {
@@ -74,10 +84,6 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -94,11 +100,19 @@ const User = sequelize.define(
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
         }
+        if (user.pin) {
+          const salt = await bcrypt.genSalt(10);
+          user.pin = await bcrypt.hash(user.pin,salt);
+        }
       },
       beforeUpdate: async (user) => {
         if (user.changed('password')) {
           const salt = await bcrypt.genSalt(10);
           user.password = await bcrypt.hash(user.password, salt);
+        }
+        if (user.changed('pin')) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.pin, salt);
         }
       },
     },
