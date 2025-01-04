@@ -1,114 +1,108 @@
-import https from 'https';
+import Deposit from '../models/Deposits.js';
 import User from '../models/User.js';
-import dotenv from 'dotenv';
+import generateUniqueReference from '../services/referenceNumberGenerator.js';
 import saveTransaction from '../services/savingtransaction.js';
 
-dotenv.config();
+// Create a new deposit
+export const createDeposit = async (req, res, next) => {
+  try {
+    const { userId, amount } = req.body;
 
-const initializeDeopist = async () => {
-    const { user_id, amount, email } = req.body;
     // Validate required fields
-    if (!user_id || !amount || !email) {
-        return res.status(400).json({
-            status: 'error',
-            message: 'User ID, amount and email are required.',
-        });
-    }
-    try {
-        // Check if user exists
-        const user = await User.findOne({ where: { id: user_id } });
-        if (!user) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'User not found.',
-            });
-        }
-        const options = {
-            hostname: 'api request',
-            port: 443,
-            path: 'path',
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${apiKEY}`,
-                'Content-Type': 'application/json',
-            },
-        };
-
-        // Make the Paystack API request
-        const ApiReq = https.request(options, (ApiRes) => {
-            let data = '';
-
-            ApiRes.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            ApiRes.on('end', async () => {
-                const result = JSON.parse(data);
-
-                if (ApiRes.statusCode === 200 || ApiRes.statusCode === 201) {
-                    const referenceId = result.data.reference;
-
-                    // Prepare transaction data for saving
-                    const transactionData = {
-                        userId: user_id,
-                        amount,
-                        type: 'deposit',
-                        referenceId,
-                        status: 'pending',
-                        details: {
-                            telecomProvider: telecom_provider,
-                            phone,
-                        },
-                    };
-
-                    try {
-                        // Save the transaction
-                        const savedTransaction = await saveTransaction(transactionData);
-
-                        return res.status(201).json({
-                            status: 'success',
-                            message: 'Airtime conversion initialized successfully.',
-                            data: savedTransaction,
-                        });
-                    } catch (dbError) {
-                        return res.status(500).json({
-                            status: 'error',
-                            message: 'Database save error.',
-                            error: dbError.message,
-                        });
-                    }
-                } else {
-                    // Handle API errors
-                    const errorMessage =
-                        result.data?.message === 'Currency not yet supported'
-                            ? 'Currency not supported. Use NGN or contact support.'
-                            : result.message || 'API error.';
-
-                    return res.status(ApiRes.statusCode).json({
-                        status: 'error',
-                        message: errorMessage,
-                        details: result,
-                    });
-                }
-            });
-        });
-
-        // Handle communication errors
-        ApiReq.on('error', (error) => {
-            return res.status(500).json({
-                status: 'error',
-                message: error.message || 'API communication error.',
-            });
-        });
-
-        ApiReq.write(params);
-        ApiReq.end();
-    } catch (error) {
-        return res.status(500).json({
-            status: 'error',
-            message: error.message || 'Internal server error.',
-        });
+    if (!userId || !amount) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'User ID and amount are required.',
+      });
     }
 
+   // Generate a unique reference ID
+   const referenceId = await generateUniqueReference();
+
+   // Save the deposit transaction
+   const transactionData = {
+     userId,
+     type: 'deposit',
+     amount,
+     referenceId,
+     status: 'pending',
+   };
+
+   const result = await saveTransaction(transactionData);
+
+   if (result.status === 'error') {
+     return res.status(500).json(result);
+   }
+
+    // Update user's account balance
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found.',
+      });
+    }
+
+    user.balance += amount;
+    await user.save();
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Deposit created and balance updated successfully.',
+      data: result.data,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
-export default initializeDeopist;
+
+// Fetch deposit details
+export const getDepositDetails = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+  
+      const deposit = await Deposit.findByPk(id);
+  
+      if (!deposit) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Deposit not found.',
+        });
+      }
+  
+      res.status(200).json({
+        status: 'success',
+        data: deposit,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Update deposit status
+export const updateDepositStatus = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+  
+      const deposit = await Deposit.findByPk(id);
+  
+      if (!deposit) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Deposit not found.',
+        });
+      }
+
+      deposit.status = status;
+      await deposit.save();
+  
+      res.status(200).json({
+        status: 'success',
+        message: 'Deposit status updated successfully.',
+        data: deposit,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
