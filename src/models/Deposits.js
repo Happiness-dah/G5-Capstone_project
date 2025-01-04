@@ -34,7 +34,12 @@ const Deposit = sequelize.define('Deposit', {
     defaultValue: DataTypes.NOW,
   },
 });
-Deposit.belongsTo(Transactions, { foreignKey: 'reference_id' })
+Deposit.belongsTo(Transactions, {
+  foreignKey: 'reference_id',
+  targetKey: 'reference_id', // Match the reference_id field in Transactions
+  onDelete: 'CASCADE', // Cascade delete to clean up related records
+  onUpdate: 'CASCADE',
+});
 Deposit.belongsTo(User, { foreignKey: 'user_id' })
 
 

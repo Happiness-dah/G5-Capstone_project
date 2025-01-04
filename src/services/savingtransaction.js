@@ -28,14 +28,15 @@ const saveTransaction = async (transactionData) => {
       // Save related records based on the transaction type
       if (type === 'airtime_conversion') {
         const { telecomProvider, phone } = details;
+
+        // Use the transaction's id as the foreign key
         relatedRecord = await AirtimeConversion.create(
           {
-            id: referenceId,
+            reference_id: referenceId, // Correct FK relationship
             user_id: userId,
             amount,
             telecom_provider: telecomProvider,
             phone,
-            reference_id: referenceId,
           },
           { transaction: t }
         );
@@ -50,12 +51,11 @@ const saveTransaction = async (transactionData) => {
         const { recipient, remarks } = details;
         relatedRecord = await Debit.create(
           {
-            id: referenceId,
+            reference_id: referenceId, // Correct FK relationship
             user_id: userId,
             amount,
             recipient,
             remarks: remarks || null,
-            reference_id: referenceId,
           },
           { transaction: t }
         );
@@ -69,10 +69,9 @@ const saveTransaction = async (transactionData) => {
       } else if (type === 'deposit') {
         relatedRecord = await Deposit.create(
           {
-            id: referenceId,
+            reference_id: referenceId, // Correct FK relationship
             user_id: userId,
             amount,
-            reference_id: referenceId,
             status,
           },
           { transaction: t }
@@ -88,12 +87,11 @@ const saveTransaction = async (transactionData) => {
         const { billType, billProvider } = details;
         relatedRecord = await BillPayments.create(
           {
-            id: referenceId,
+            reference_id: referenceId, // Correct FK relationship
             user_id: userId,
             amount,
             bill_type: billType,
             bill_provider: billProvider,
-            reference_id: referenceId,
             status,
           },
           { transaction: t }
@@ -119,5 +117,6 @@ const saveTransaction = async (transactionData) => {
     return { status: 'error', message: error.message };
   }
 };
+
 
 export default saveTransaction;

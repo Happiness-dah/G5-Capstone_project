@@ -1,8 +1,6 @@
 // adminController.js
-
 import User from '../models/User.js';
 import Transaction from '../models/Transactions.js';
-import Pricing from '../models/Pricing.js';
 import PaymentService from '../services/paymentService.js';
 import NotificationService from '../services/notificationService.js';
 import ReportService from '../services/reportService.js';
@@ -75,17 +73,7 @@ export const refundTransaction = async (req, res) => {
     }
 };
 
-// Update Pricing Rules
-export const updatePricingRules = async (req, res) => {
-    try {
-        const { serviceType, pricingRules } = req.body; // Example: { "airtime": { "fee": 1.5 } }
-        const updatedRules = await Pricing.updateOne({ serviceType }, { $set: pricingRules }, { upsert: true });
 
-        res.status(200).json({ success: true, message: 'Pricing rules updated successfully.', data: updatedRules });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
 
 // Reconcile Payments (Check platform and bank records)
 export const reconcilePayments = async (req, res) => {
