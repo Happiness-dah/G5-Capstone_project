@@ -9,7 +9,7 @@ import errorHandler from './middleware/errorHandler.js';
 import airtimeRoutes from './routes/airtimeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js'
-
+import depositRoutes from './routes/depositRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +30,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true })
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Deposit routes
+app.use('/api/deposits', depositRoutes);
 
 //admin
 app.use('/api/admin', adminRoutes);
