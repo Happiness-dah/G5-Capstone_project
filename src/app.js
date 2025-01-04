@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 import airtimeRoutes from './routes/airtimeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import userRoutes from './routes/userRoutes.js'
 
 
 // Load environment variables
@@ -33,8 +34,11 @@ app.use('/api/auth', authRoutes);
 //admin
 app.use('/api/admin', adminRoutes);
 
-//paystack
+//api
 app.use('/api/airtime', airtimeRoutes);
+
+//user
+app.use('/api/users', userRoutes);
 
 // Error handling
 app.use(errorHandler);
