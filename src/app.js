@@ -10,6 +10,7 @@ import airtimeRoutes from './routes/airtimeRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js'
 import depositRoutes from './routes/depositRoutes.js';
+import transferRoutes from './routes/transferRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -34,13 +35,16 @@ app.use('/api/auth', authRoutes);
 // Deposit routes
 app.use('/api/deposits', depositRoutes);
 
-//admin
+// Transfer routes
+app.use('/api/transfers', transferRoutes);
+
+//Admin routes
 app.use('/api/admin', adminRoutes);
 
-//api
+//airtime routes
 app.use('/api/airtime', airtimeRoutes);
 
-//user
+//user routes
 app.use('/api/users', userRoutes);
 
 // Error handling
