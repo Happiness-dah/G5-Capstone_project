@@ -200,17 +200,16 @@ router.get('/audit-logs', protectAdmin, authorize('admin'), adminController.view
 router.post('/notifications', protectAdmin, authorize('admin'), adminController.sendNotifications);
 
 /**
- * @swagger
- * /admin/reports:
+* /admin/reports:
  *   get:
- *     summary: Generate financial reports
- *     description: Generate financial reports for the platform.
- *      tags: [Authentication]
+ *     summary: generate report
+ *     description: Generate report.
+ *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Report generated successfully
+ *         description: Successfully generated report
  *       401:
  *         description: Unauthorized - User not authenticated
  *       403:
