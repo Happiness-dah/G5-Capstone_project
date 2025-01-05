@@ -1,10 +1,11 @@
-const Transactions = require('./Transactions'); 
-const airtimeConversion = require('./airtimeConversion'); 
-const Debit = require('./Debit'); 
-const Deposit = require('./Deposit');
-const BillsPayments = require('./BillsPayments'); 
+import Transactions from "../models/Transactions";
+import airtimeConversion from "../models/airtimeConversion";
+import Debit from "../models/Debit";
+import Deposit from "../models/Deposits";
+import BillPayments from "../models/BillPayments";
 
-const { Transactions, airtimeConversion, Debit, Deposit, BillsPayments } = require('../models');
+
+const { Transactions, airtimeConversion, Debit, Deposit, BillsPayments } = "../models";
 
 async function getTransactionHistory(filters) {
   try {
@@ -62,4 +63,5 @@ async function getTransactionHistory(filters) {
   }
 }
 
-module.exports = { getTransactionHistory };
+
+export default getTransactionHistory;

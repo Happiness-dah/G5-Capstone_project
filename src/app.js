@@ -1,4 +1,4 @@
-  import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
@@ -7,6 +7,7 @@ import { connectDB } from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 import airtimeRoutes from './routes/airtimeRoutes.js';
+import transactions from './routes/transactions.js'
 
 
 // Load environment variables
@@ -31,6 +32,7 @@ app.use('/api/auth', authRoutes);
 
 //paystack
 app.use('/api/conversion', airtimeRoutes);
+app.use('/api/history', historyRoutes); // Add history route
 
 // Error handling
 app.use(errorHandler);

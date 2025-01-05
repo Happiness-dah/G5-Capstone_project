@@ -1,4 +1,4 @@
-const { getTransactionHistory } = require('../models/history'); 
+import getTransactionHistory from "../services/history.js";
 
 // Controller to handle history API requests
 const fetchTransactionHistory = async (req, res) => {
@@ -19,4 +19,4 @@ const fetchTransactionHistory = async (req, res) => {
   }
 };
 
-module.exports = { fetchTransactionHistory };
+export default fetchTransactionHistory;
