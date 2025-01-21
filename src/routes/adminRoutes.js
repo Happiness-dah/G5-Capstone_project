@@ -23,6 +23,7 @@ const router = express.Router();
  *         description: Forbidden - User does not have permission
  */
 router.get('/users', protectAdmin, authorize('admin'), adminController.monitorUsers);
+router.get('/token', protectAdmin, authorize('admin'), adminController.monitorToken)
 
 /**
  * @swagger

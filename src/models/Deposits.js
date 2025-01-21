@@ -18,8 +18,9 @@ const Deposit = sequelize.define('Deposit', {
     allowNull: false,
   },
   reference_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING(255),
     allowNull: false,
+    unique: true,
   },
   status: {
     type: DataTypes.ENUM('pending', 'successful', 'failed'),

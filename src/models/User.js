@@ -12,8 +12,7 @@ const User = sequelize.define(
     },
     username: {
       type: DataTypes.STRING,
-      allowNull: false,
-      unique: 'unique_username', // Use a named unique constraint
+      allowNull: false,    
       validate: {
         len: {
           args: [3, 30],

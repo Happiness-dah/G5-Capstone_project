@@ -33,7 +33,7 @@ export const FecthallBank = async (req, res) => {
     }
 }
 
-export const fetchUserDetail = async ($req, res) => {
+export const fetchUserDetail = async (req, res) => {
     const { userId } = req.body
     if (userId) {
         try {

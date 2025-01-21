@@ -1,5 +1,5 @@
 import Transactions from '../models/Transactions.js';
-import airtimeConversion from '../models/AirtimeConversion.js';
+import airtimeConversion from '../models/airtimeConversion.js';
 import Debit from '../models/Debit.js';
 import Deposit from '../models/Deposits.js';
 import BillsPayments from '../models/BillPayments.js';

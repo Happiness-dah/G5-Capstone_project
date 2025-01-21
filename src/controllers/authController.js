@@ -2,6 +2,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User from '../models/User.js';
 import { sendResetPasswordEmail } from '../services/emailService.js';
+import createSession from '../services/session.js';
+import Session from '../models/Session.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -14,24 +16,39 @@ export const register = async (req, res, next) => {
     const { username, email, password, role, phone_number, pin } = req.body;
     const account_balance = 0;
 
+    // Check if the email already exists
+    const check = await User.findOne({ where: { email: email } });
+
+    if (check) {
+      return res.status(400).json({
+        status: 'failed',
+        message: "Email has already been used"
+      });
+    }
+
     // Create user
     const user = await User.create({
       username,
       email,
       password,
-      role: role || 'user',// Default to 'user' if no role specified
+      role: role || 'user', // Default to 'user' if no role is specified
       phone_number,
       pin,
       account_balance
     });
-    const history = await User.findAll({ email: user.email });
+
+    // Fetch the newly created user
+    const users = await User.findOne({
+      where: { email: user.email },
+    });
+
     // Generate token
     const token = generateToken(user.id);
 
-    res.status(201).json({
+    return res.status(201).json({
       status: 'success',
       data: {
-        history,
+        users,
         token
       }
     });
@@ -52,7 +69,7 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // Find user
+    // Find user by email
     const user = await User.findOne({ where: { email } });
 
     if (!user || !(await user.comparePassword(password))) {
@@ -69,17 +86,27 @@ export const login = async (req, res, next) => {
     // Generate token
     const token = generateToken(user.id);
 
-    res.json({
-      status: 'success',
-      data: {
-        user,
-        token
-      }
-    });
+    // Data to be passed to createSession
+    const data = [token, user.id];
+    const userId = user.id
+
+    // Create session
+    const session = await createSession(token, userId);
+    if (session.status === 'success') {
+      // Respond with success and token
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          user,
+          token
+        }
+      });
+    }
   } catch (error) {
     next(error);
   }
 };
+
 
 export const forgotPassword = async (req, res, next) => {
   try {
@@ -195,3 +222,64 @@ export const changePassword = async (req, res, next) => {
   }
 };
 
+export const logout = async (req, res) => {
+  try {
+    // Retrieve token from request headers
+    const token = req.headers.authorization?.split(" ")[1]; // Format: "Bearer <token>"
+
+    if (!token) {
+      return res.status(400).json({
+        status: "error",
+        message: "Token not provided",
+      });
+    }
+
+    // Decode and verify the token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({
+        status: "error",
+        message: "Invalid or expired token",
+      });
+    }
+
+    // Find the session by token
+    const session = await Session.findOne({
+      where: { token },
+    });
+
+    if (!session) {
+      return res.status(404).json({
+        status: "error",
+        message: "Session not found",
+      });
+    }
+
+    // Check if the session is already inactive
+    if (session.status === "inactive") {
+      return res.status(400).json({
+        status: "error",
+        message: "Session is already inactive",
+      });
+    }
+
+    // Update the session status to "inactive"
+    await session.update({ status: "inactive" });
+
+    // Respond with success
+    return res.status(200).json({
+      status: "success",
+      message: "User successfully logged out",
+      userId: decoded.id, // Optional: Include user details in the response
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Logout failed due to an internal error",
+      error: error.message,
+    });
+  }
+};
