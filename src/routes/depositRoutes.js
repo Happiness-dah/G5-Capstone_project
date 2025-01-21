@@ -1,8 +1,11 @@
-import express from 'express';
-import * as depositController from '../controllers/depositController.js';
-import { protectUser } from '../middleware/authMiddleware.js';
+import express from 'express'
+import * as deposit from '../controllers/depositController.js'
+import {
+  protectUser,
+  checkSessionValidity
+} from '../middleware/authMiddleware.js'
 
-const router = express.Router();
+const router = express.Router()
 
 /**
  * @swagger
@@ -35,11 +38,11 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/', protectUser, depositController.createDeposit);
+router.post('/', protectUser, checkSessionValidity, deposit.createDeposit)
 
 /**
  * @swagger
- * /deposits/{id}:
+ * /deposits/get/{id}:
  *   get:
  *     summary: Fetch deposit details
  *     tags: [Deposits]
@@ -60,11 +63,16 @@ router.post('/', protectUser, depositController.createDeposit);
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', protectUser, depositController.getDepositDetails);
+router.get(
+  '/get/:id',
+  protectUser,
+  checkSessionValidity,
+  deposit.getDepositDetails
+)
 
 /**
  * @swagger
- * /deposits/{id}:
+ * /deposits/update/{id}:
  *   put:
  *     summary: Update deposit status
  *     tags: [Deposits]
@@ -96,6 +104,18 @@ router.get('/:id', protectUser, depositController.getDepositDetails);
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', protectUser, depositController.updateDepositStatus);
+router.put(
+  '/update/{id}',
+  protectUser,
+  checkSessionValidity,
+  deposit.updateDepositStatus
+)
 
-export default router;
+router.post(
+  '/getKey',
+  protectUser,
+  checkSessionValidity,
+  deposit.processRequest
+)
+
+export default router

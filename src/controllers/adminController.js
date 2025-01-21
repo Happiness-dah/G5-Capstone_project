@@ -8,12 +8,23 @@ import PlatformSettings from '../models/PlatformSettings.js';
 import AuditLog from '../models/AuditLog.js';
 import Product from '../models/Product.js';
 import getTransactionHistory from '../services/history.js';
+import Session from '../models/Session.js';
+
 // Monitor Users
 export const monitorUsers = async (req, res) => {
     try {
         const users = await User.findAll({
             where: { role: 'user' } // Fetch users where role is 'user'
         }); // Get all users from the database
+        res.status(200).json({ success: true, data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+// Monitor Users
+export const monitorToken = async (req, res) => {
+    try {
+        const users = await Session.findAll(); // Get all users from the database
         res.status(200).json({ success: true, data: users });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

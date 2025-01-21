@@ -16,9 +16,9 @@ const Transactions = sequelize.define('Transactions', {
     allowNull: false,
   },
   reference_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING(255),
     allowNull: false,
-    unique: true, // Ensure the column is unique
+    unique: true,
   },
   amount: {
     type: DataTypes.DECIMAL,

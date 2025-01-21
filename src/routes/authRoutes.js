@@ -5,9 +5,10 @@ import {
   login,
   forgotPassword,
   resetPassword,
-  changePassword
+  changePassword,
+  logout
 } from '../controllers/authController.js';
-import { protectUser, protectAdmin, authorize } from '../middleware/authMiddleware.js';
+import { protectUser, protectAdmin, authorize, checkSessionValidity } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -238,7 +239,7 @@ router.post('/change-password', protectUser, changePasswordValidation, changePas
  *       401:
  *         description: Not authorized
  */
-router.get('/test-auth', protectUser, (req, res) => {
+router.get('/test-auth', checkSessionValidity, protectUser, (req, res) => {
   res.json({
     status: 'success',
     message: 'You are authenticated',
@@ -260,12 +261,14 @@ router.get('/test-auth', protectUser, (req, res) => {
  *       403:
  *         description: Not authorized (non-admin user)
  */
-router.get('/admin-only', protectAdmin, (req, res) => {
+router.get('/admin-only', protectAdmin, checkSessionValidity, (req, res) => {
   res.json({
     status: 'success',
     message: 'You have admin access',
     user: req.user
   });
 });
+
+router.get('/logout', protectUser, checkSessionValidity, logout);
 
 export default router;

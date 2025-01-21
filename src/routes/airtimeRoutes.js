@@ -1,6 +1,7 @@
 import express from 'express';
 import * as conversion from '../controllers/airtimeController.js';
-
+import { checkSessionValidity } from '../middleware/authMiddleware.js';
+import { updateTransactionStatus } from '../services/savingtransaction.js';
 
 const router = express.Router();
 
@@ -70,7 +71,7 @@ const router = express.Router();
  */
 
 
-router.post('/initialize', conversion.initializeAirtimeConversion);
+router.post('/initialize', checkSessionValidity, conversion.initializeAirtimeConversion);
 
 /**
  * @swagger
@@ -150,7 +151,54 @@ router.post('/initialize', conversion.initializeAirtimeConversion);
  *                   example: "Internal server error."
  */
 
-router.post('/complete', conversion.CompleteAirtimeConversion);
+router.post('/complete', checkSessionValidity, conversion.CompleteAirtimeConversion);
 
+router.post('/webhook', async (req, res) => {
+    try {
+        // Acknowledge receipt quickly to avoid webhook timeouts
+        res.status(200).send('Webhook received');
+
+        // Extract and validate the payload
+        const { ref, status, service, network, amount, credit, Charge, sender } = req.body;
+        console.log(req.body)
+
+        if (!ref || !status || !service || !amount) {
+            console.error('Invalid webhook payload:', req.body);
+            return;
+        }
+
+        // Ensure the webhook is for the expected service
+        if (service !== 'Airtime2Cash') {
+            console.warn('Unsupported service:', service);
+            return;
+        }
+
+        // Log the received payload for debugging
+        console.log('Received webhook payload:', req.body);
+
+        // Process the webhook asynchronously
+        if (status === 'Completed') {
+            const Status = status;
+            const update = await updateTransactionStatus({
+                transactionId: ref,
+                Status: Status,
+                credit: parseFloat(credit),
+                details: {
+                    telecomProvider: network,
+                    sender: sender,
+                    amount: parseFloat(amount),
+                    credit: parseFloat(credit),
+                    charge: parseFloat(Charge),
+                },
+            });
+            console.log(update)
+
+        } else {
+            console.warn(`Unhandled status: ${status}`);
+        }
+    } catch (error) {
+        console.error('Webhook processing failed:', error);
+    }
+});
 
 export default router;

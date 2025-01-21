@@ -1,7 +1,7 @@
 import axios from 'axios';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
-import saveTransaction from '../services/savingtransaction.js';
+import { saveTransaction } from '../services/savingtransaction.js';
 import https from 'https';
 import generateUniqueRef from '../services/referenceNumberGenerator.js';
 
@@ -28,13 +28,13 @@ const initializeAirtimeConversion = async (req, res) => {
     );
 
     const result = response.data;
-
-    if ([101].includes(response.status)) {
+    console.log(result)
+    if (result.code == 101) {
       return res.status(200).json({
         status: 'success',
         message: result.description.message,
         phone: result.description.Phone_Number,
-        data: result.description,
+
       });
     } else {
       // Handle API errors
@@ -69,14 +69,14 @@ const CompleteAirtimeConversion = async (req, res) => {
     const ref = await generateUniqueRef();
 
     const queryParams = new URLSearchParams({
-      apikey: apiKEY, // Replace with your actual API key
+      apikey: apiKEY, 
       network,
       sender: senderPhone,
       sendernumber: senderPhone,
       amount,
       sitephone: receiverPhone,
       ref,
-      webhookURL: 'http://testlink.com/webhook/', // Replace with your webhook URL
+      webhookURL: 'http://testlink.com/webhook/', 
     });
 
     const url = `https://vtuafrica.com.ng/portal/api/airtime-cash/?${queryParams.toString()}`;
@@ -146,7 +146,6 @@ const CompleteAirtimeConversion = async (req, res) => {
     return res.status(500).json({ error: 'An unexpected error occurred' });
   }
 };
-
 
 
 export { initializeAirtimeConversion, CompleteAirtimeConversion };

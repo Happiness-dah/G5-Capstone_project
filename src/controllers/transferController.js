@@ -1,33 +1,54 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import resolveBankAccountPaystack from '../services/PaystackService.js'
+import verifyBankDetailsVtu from '../services/VtuAfricaService.js'
 
+
+// Load environment variables
 dotenv.config();
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
-const VTU_AFRICA_API_KEY = process.env.VTU_AFRICA_API_KEY;
+const API_SECRET_KEY = process.env.API_SECRET_KEY;
 
-// Resolve bank account details using Paystack
-const resolveBankAccount = async (bankCode, acct_number) => {
-  const resolveUrl = `https://api.paystack.co/bank/resolve?account_number=${encodeURIComponent(acct_number)}&bank_code=${encodeURIComponent(bankCode)}`;
+// Function to verify account using VTU Africa
+const verifyAccountVtuAfrica = async (accountNo, bankCode) => {
+  const vtuUrl = `https://vtuafrica.com.ng/portal/api/merchant-verify/?apikey=${API_SECRET_KEY}&serviceName=BankTransfer&accountNo=${accountNo}&bankcode=${bankCode}`;
 
   try {
-    const resolveResponse = await fetch(resolveUrl, {
+    const response = await fetch(vtuUrl, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
         'Cache-Control': 'no-cache',
       },
     });
 
-    const resolveData = await resolveResponse.json();
+    const data = await response.json();
 
-    if (!resolveResponse.ok) {
-      throw new Error(resolveData.error || 'An error occurred while resolving the bank account.');
+    if (!response.ok) {
+      throw new Error(data.error || 'Error verifying account with VTU Africa.');
     }
 
-    return resolveData.data;
+    return data;
   } catch (error) {
-    throw new Error(`Internal server error: ${error.message}`);
+    throw new Error(`VTU Africa API error: ${error.message}`);
+  }
+};
+
+
+
+// Verify account via VTU Africa or fallback to Paystack
+export const verifyAccount = async (accountNo, bankCode) => {
+  try {
+    const vtuVerification = await verifyAccountVtuAfrica(accountNo, bankCode);
+
+    if (vtuVerification.status !== 'fail') {
+      return vtuVerification;
+    }
+
+    console.log('VTU Africa verification failed, falling back to Paystack...');
+    return await resolveBankAccountPaystack(bankCode, accountNo);
+  } catch (error) {
+    throw new Error(`Account verification failed: ${error.message}`);
   }
 };
 
@@ -36,7 +57,7 @@ const createTransferRecipient = async (recipientDetails) => {
   const transferRecipientUrl = 'https://api.paystack.co/transferrecipient';
 
   try {
-    const transferRecipientResponse = await fetch(transferRecipientUrl, {
+    const response = await fetch(transferRecipientUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -45,15 +66,15 @@ const createTransferRecipient = async (recipientDetails) => {
       body: JSON.stringify(recipientDetails),
     });
 
-    const transferRecipientData = await transferRecipientResponse.json();
+    const data = await response.json();
 
-    if (!transferRecipientResponse.ok) {
-      throw new Error(transferRecipientData.error || 'An error occurred while creating the transfer recipient.');
+    if (!response.ok) {
+      throw new Error(data.error || 'Error creating transfer recipient.');
     }
 
-    return transferRecipientData.data;
+    return data.data;
   } catch (error) {
-    throw new Error(`Internal server error: ${error.message}`);
+    throw new Error(`Paystack API error: ${error.message}`);
   }
 };
 
@@ -62,7 +83,7 @@ const initiateTransfer = async (amount, recipientCode, reason) => {
   const transferUrl = 'https://api.paystack.co/transfer';
 
   try {
-    const transferResponse = await fetch(transferUrl, {
+    const response = await fetch(transferUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
@@ -76,141 +97,75 @@ const initiateTransfer = async (amount, recipientCode, reason) => {
       }),
     });
 
-    const transferData = await transferResponse.json();
+    const data = await response.json();
 
-    if (!transferResponse.ok) {
-      throw new Error(transferData.error || 'An error occurred while initiating the transfer.');
+    if (!response.ok) {
+      throw new Error(data.error || 'Error initiating transfer.');
     }
 
-    return transferData.data;
+    return data.data;
   } catch (error) {
-    throw new Error(`Internal server error: ${error.message}`);
+    throw new Error(`Paystack API error: ${error.message}`);
   }
 };
 
-// Initiate VTU Africa transfer
-const initiateVtuTransfer = async (amount, recipientDetails) => {
-  const vtuUrl = 'https://api.vtu.africa/transfer';
+// Check VTU Africa account balance
+const checkVtuBalance = async () => {
+  const balanceUrl = `https://vtuafrica.com.ng/portal/api/check-balance/?apikey=${API_SECRET_KEY}`;
 
   try {
-    const response = await fetch(vtuUrl, {
-      method: 'POST',
+    const response = await fetch(balanceUrl, {
+      method: 'GET',
       headers: {
-        'Authorization': `Bearer ${VTU_AFRICA_API_KEY}`,
+        'Authorization': `Bearer ${API_SECRET_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        amount,
-        recipient: recipientDetails,
-      }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'An error occurred while initiating the VTU transfer.');
+      throw new Error(data.error || 'Error fetching VTU Africa balance.');
     }
 
-    return data;
+    return data.balance;
   } catch (error) {
     throw new Error(`VTU Africa API error: ${error.message}`);
   }
 };
 
-// Transfer to user's bank account
+// Exported functions for controllers
 export const transferToUserBank = async (req, res) => {
   const { bankCode, acct_number, amount, recipientName, useVtu } = req.body;
 
   if (!bankCode || !acct_number || !amount || !recipientName) {
-    return res.status(400).json({
-      result: 'fail',
-      error: 'Invalid input parameters.',
-    });
+    return res.status(400).json({ result: 'fail', error: 'Invalid input parameters.' });
   }
 
   try {
     if (useVtu) {
-      const recipientDetails = { bankCode, acct_number, recipientName };
-      const vtuResponse = await initiateVtuTransfer(amount, recipientDetails);
-      return res.status(200).json({
-        result: 'success',
-        data: vtuResponse,
-      });
-    } else {
-      // Resolve bank account
-      const resolvedAccount = await resolveBankAccount(bankCode, acct_number);
+      const vtuBalance = await checkVtuBalance();
 
-      // Create transfer recipient
-      const recipientDetails = {
-        type: 'nuban',
-        name: recipientName,
-        account_number: acct_number,
-        bank_code: bankCode,
-        currency: 'NGN',
-      };
-      const transferRecipient = await createTransferRecipient(recipientDetails);
-
-      // Initiate transfer
-      const transferData = await initiateTransfer(amount, transferRecipient.recipient_code, 'Transfer to user bank account');
-
-      return res.status(200).json({
-        result: 'success',
-        data: transferData,
-      });
+      if (vtuBalance >= amount) {
+        const vtuResponse = await initiateVtuTransfer(amount, { bankCode, acct_number, recipientName });
+        return res.status(200).json({ result: 'success', data: vtuResponse });
+      }
     }
+
+    const resolvedAccount = await resolveBankAccountPaystack(bankCode, acct_number);
+    const recipientDetails = {
+      type: 'nuban',
+      name: recipientName,
+      account_number: acct_number,
+      bank_code: bankCode,
+      currency: 'NGN',
+    };
+
+    const recipient = await createTransferRecipient(recipientDetails);
+    const transfer = await initiateTransfer(amount, recipient.recipient_code, 'Transfer to user bank account');
+
+    return res.status(200).json({ result: 'success', data: transfer });
   } catch (error) {
-    return res.status(500).json({
-      result: 'fail',
-      error: error.message,
-    });
-  }
-};
-
-// Transfer to third party's bank account
-export const transferToThirdPartyBank = async (req, res) => {
-  const { bankCode, acct_number, amount, recipientName, useVtu } = req.body;
-
-  if (!bankCode || !acct_number || !amount || !recipientName) {
-    return res.status(400).json({
-      result: 'fail',
-      error: 'Invalid input parameters.',
-    });
-  }
-
-  try {
-    if (useVtu) {
-      const recipientDetails = { bankCode, acct_number, recipientName };
-      const vtuResponse = await initiateVtuTransfer(amount, recipientDetails);
-      return res.status(200).json({
-        result: 'success',
-        data: vtuResponse,
-      });
-    } else {
-      // Resolve bank account
-      const resolvedAccount = await resolveBankAccount(bankCode, acct_number);
-
-      // Create transfer recipient
-      const recipientDetails = {
-        type: 'nuban',
-        name: recipientName,
-        account_number: acct_number,
-        bank_code: bankCode,
-        currency: 'NGN',
-      };
-      const transferRecipient = await createTransferRecipient(recipientDetails);
-
-      // Initiate transfer
-      const transferData = await initiateTransfer(amount, transferRecipient.recipient_code, 'Transfer to third party bank account');
-
-      return res.status(200).json({
-        result: 'success',
-        data: transferData,
-      });
-    }
-  } catch (error) {
-    return res.status(500).json({
-      result: 'fail',
-      error: error.message,
-    });
+    return res.status(500).json({ result: 'fail', error: error.message });
   }
 };
